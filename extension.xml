@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<software>
+    <metadata>
+        <name>InfoTN ITObjectSync Extension</name>
+        <version>1.0</version>
+        <copyright>Copyright © 2010 Informatica Trentina SpA</copyright>
+        <license>GNU General Public License v2.0</license>
+    </metadata>
+
+    <dependencies>
+        <requires>
+            <extension name="ocopendata" />       
+            <extension name="sqliimport" />          
+        </requires>
+    </dependencies>
+
+</software>

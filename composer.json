@@ -1,0 +1,21 @@
+{
+    "name": "infotn/itobjectsync",
+    "version": "1.0",
+    "description": "Informatica Trentina - ITObjectSync",
+    "type": "ezpublish-legacy-extension",
+    "authors": [        
+        {
+            "name": "Informatica Trentina SpA",
+            "homepage": "http://www.infotn.it"
+        }
+    ],
+    "license": "GPL-2.0",    
+    "minimum-stability": "dev",   
+    "require": {
+        "lolautruche/sqliimport": "~1.2.1",
+        "opencontent/ocopendata-ls" : "~1.0"
+    },
+    "extra": {
+        "ezpublish-legacy-extension-name": "itobjectsync"
+    }
+}
