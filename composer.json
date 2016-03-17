@@ -1,6 +1,6 @@
 {
     "name": "informaticatrentina/itobjectsync",
-    "version": "1.1",
+    "version": "1.2",
     "description": "Informatica Trentina - ITObjectSync",
     "type": "ezpublish-legacy-extension",
     "authors": [        
@@ -13,7 +13,7 @@
     "minimum-stability": "dev",   
     "require": {
         "lolautruche/sqliimport": "~1.2.1",
-        "opencontent/ocopendata-ls" : "~1.0"
+        "opencontent/ocopendata-ls" : "~2.0"
     },
     "extra": {
         "ezpublish-legacy-extension-name": "itobjectsync"
