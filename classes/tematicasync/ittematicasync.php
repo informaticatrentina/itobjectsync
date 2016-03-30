@@ -4,34 +4,52 @@
  * Contiene le funzionalità per l'attivazione della sincronizzazione
  * automatica di un contenuto in base alla Tematica
  */
-class ITTematicaSync{
+class ITTematicaSync
+{
     private $repository_id;
     private $repository_url;
-    private $default_dest_node_id;
-    private $tematiche;
+    
+    private $object; // Persistent object abbinato
     
     ////////////////////// CONSTRUCTOR //////////////////////
     
-    public function __construct( $repository ) {
+    public function __construct( $repository ) 
+    {
         $this->repository_id = $repository;
         
         // Ricavo sorgente del repository
         $repositoryINI = eZINI::instance('ocrepository.ini', 'settings', null, FALSE);
         $this->repository_url = $repositoryINI->variable( 'Client_' . $this->repository_id, 'Url' );
-        $this->default_dest_node_id = $repositoryINI->variable( 'Client_' . $this->repository_id, 'DefaultDestinationNodeID' );
-        $this->tematiche = $repositoryINI->variable( 'Client_' . $this->repository_id, 'Tematiche' );
         
+        // Ricavo le tematiche abilitate ed il nodo destinazione dal db
+        $this->object = ITTematicaSyncPersistentObject::fetchByRepository($repository);
+        
+        // Creo il record se non esiste
+        if($this->object === null){
+            $this->object = new ITTematicaSyncPersistentObject(array('repository' => $repository));
+            $this->object->store();
+        }
     }
     
     ////////////////////// GETTER AND SETTER //////////////////////
     
-    public function getRepositoryUrl(){ return $this->repository_url; }
-    public function getDefaultDestinationNodeID(){ return $this->default_dest_node_id; }
-    public function getTematiche(){ return $this->tematiche; }
+    public function getRepositoryUrl()
+    { 
+        return $this->repository_url; 
+    }
+    public function getDefaultDestinationNodeID()
+    { 
+        return $this->object->attribute('destination_node_id');
+    }
+    public function getTematiche()
+    {
+        return explode(';', $this->object->attribute('tags'));
+    }
     
-    ////////////////////// PRIVATE UTILS //////////////////////
+    ////////////////////// PRIVATE METHODS //////////////////////
     
-    private function currentSiteAccess(){
+    private function currentSiteAccess()
+    {
         $ezCurrentAccess = $GLOBALS['eZCurrentAccess'];
         
         $siteaccess = $ezCurrentAccess['name'];
@@ -40,14 +58,14 @@ class ITTematicaSync{
         return $siteaccess;
     }
     
-    
-    ////////////////////// UTILS //////////////////////
+    ////////////////////// PUBLIC METHODS //////////////////////
     
     /**
      * Ricava le tematiche dal sito remoto
      * @return array
      */
-    public function fetchRemoteTags(){
+    public function fetchRemoteTags()
+    {
         $remote_tags = array();
         
         if( $this->repository_url != FALSE ){
@@ -62,18 +80,14 @@ class ITTematicaSync{
      * Aggiorna la selezione delle tematiche da sincronizzare
      * @param eZHTTPTool $http
      */
-    public function modifySelection( $http ){
+    public function modifySelection( $http )
+    {
         if($http->hasPostVariable( 'BrowseActionName' ) && $http->postVariable('BrowseActionName') == 'SelectDestinationNodeID'){
             // Scelta del nodo di destinazione
             
             $nodeIDArray = $http->postVariable('SelectedNodeIDArray');
-            $this->default_dest_node_id = $nodeIDArray[0];
-            
-            $repositoryINI = eZINI::instance('ocrepository.ini.append.php', 'settings/siteaccess/' . $this->currentSiteAccess());
-            $repositoryINI->setVariable('Client_' . $this->repository_id, 'DefaultDestinationNodeID', $this->default_dest_node_id);
-            
-            $repositoryINI->save();
-            $repositoryINI->resetCache();
+            $this->object->setAttribute('destination_node_id', $nodeIDArray[0]);
+            $this->object->store();
         }
         else{
             // Abilitazione e disabilitazione delle tematiche
@@ -83,24 +97,23 @@ class ITTematicaSync{
                 $action = explode('_', $key);
                 
                 if($action[0] == 'DisableTag'){
-                    if(($_key = array_search($value, $this->tematiche)) !== false) {
-                        unset($this->tematiche[$_key]);
+                    if(($_key = array_search($value, $this->getTematiche())) !== false) {
+                        unset($this->getTematiche()[$_key]);
                     }
                     
                     $tematicheChanged = true;
                 }
                 else if($action[0] == 'EnableTag'){
-                    $this->tematiche[] = $value;
+                    $_tematiche = $this->getTematiche();
+                    $_tematiche[] = $value;
+                    $this->object->setAttribute('tags', implode(';', $_tematiche));
                     
                     $tematicheChanged = true;
                 }
             }
             
             if($tematicheChanged){
-                $repositoryINI = eZINI::instance('ocrepository.ini.append.php', 'settings/siteaccess/' . $this->currentSiteAccess());
-                $repositoryINI->setVariable('Client_' . $this->repository_id, 'Tematiche', $this->tematiche);
-                $repositoryINI->save(false,false,false,false,true,true,true);
-                $repositoryINI->resetCache();
+                $this->object->store();
             }
         }
     }

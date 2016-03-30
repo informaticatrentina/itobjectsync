@@ -45,10 +45,12 @@ class ITTematicaSyncController {
             $tematicaSync = $ini->variable($client, 'TematicaSync');
             
             if( $tematicaSync == 'true' ){
-                $nodeID = $ini->variable($client, 'DefaultDestinationNodeID');
+                $itTematicaSync = new ITTematicaSync( $repository );
+                
+                $nodeID = $itTematicaSync->getDefaultDestinationNodeID();
                 
                 if(isset($nodeID)){
-                    $_tags = $ini->variable($client, 'Tematiche');
+                    $_tags = $itTematicaSync->getTematiche();
                     $tags = implode($_tags, '|');
                     
                     // Chiamata remota con elenco remoteid ( /itobjectsync/tematichequery/$repository/$tags/$days )
