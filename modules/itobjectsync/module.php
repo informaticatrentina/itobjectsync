@@ -52,4 +52,9 @@ $ViewList['tematichequery'] = array(
     'post_action_parameters'	=> 	array()
 );
 
+$FunctionList = array();
+$FunctionList['client'] = array();
+$FunctionList['tematiche'] = array();
+$FunctionList['tematichequery'] = array();
+
 ?>

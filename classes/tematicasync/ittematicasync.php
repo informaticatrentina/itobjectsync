@@ -98,7 +98,10 @@ class ITTematicaSync
                 
                 if($action[0] == 'DisableTag'){
                     if(($_key = array_search($value, $this->getTematiche())) !== false) {
-                        unset($this->getTematiche()[$_key]);
+                        $_tematiche = $this->getTematiche();
+                        
+                        unset($_tematiche[$_key]);
+                        $this->object->setAttribute('tags', implode(';', $_tematiche));
                     }
                     
                     $tematicheChanged = true;
